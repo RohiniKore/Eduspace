@@ -16,10 +16,11 @@ router.post('/register', async (req, res) => {
     if (!['student', 'teacher', 'admin'].includes(role)) return res.status(400).json({ message: 'Invalid role' });
 
     if (role === 'admin') {
-      const secret = process.env.ADMIN_SECRET || 'eduspace-admin';
+      const { adminSecret } = req.body;
+      const secret = process.env.ADMIN_SECRET || 'eduspace-admin-secret';
       if (adminSecret !== secret) return res.status(403).json({ message: 'Invalid admin secret key' });
-    }
-
+    } 
+    
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: 'Email already registered' });
 
@@ -46,6 +47,15 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
     if (!user.isActive) return res.status(401).json({ message: 'Account deactivated' });
+
+    // If admin, verify secret key
+    if (user.role === 'admin') {
+      const { adminSecret } = req.body;
+      const secret = process.env.ADMIN_SECRET || 'eduspace-admin-secret';
+      if (!adminSecret || adminSecret !== secret) {
+        return res.status(403).json({ message: 'Invalid admin secret key' });
+      }
+    }
 
     const token = signToken(user._id);
     res.json({ token, user });
