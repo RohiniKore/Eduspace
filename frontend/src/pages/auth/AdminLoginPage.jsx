@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function AdminLoginPage() {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '', adminSecret: '' });
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const { login } = useAuth();
@@ -14,7 +14,7 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const user = await login(form.email, form.password);
+      const user = await login(form.email, form.password, form.adminSecret);
       if (user.role === 'admin') {
          toast.success(`Welcome back, Admin!`);
          navigate('/admin');
@@ -67,6 +67,16 @@ export default function AdminLoginPage() {
                 {showPass ? 'Hide' : 'Show'}
               </button>
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Admin Secret Key</label>
+            <input
+              type="password" required
+              className="input-field bg-slate-50 focus:bg-white"
+              placeholder="Enter your secret key"
+              value={form.adminSecret}
+              onChange={e => setForm(p => ({ ...p, adminSecret: e.target.value }))}
+            />
           </div>
 
           <button type="submit" disabled={loading} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-5 rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg mt-4 flex items-center justify-center gap-2">
